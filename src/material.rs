@@ -53,7 +53,7 @@ impl Material {
 		None
 	}
 
-	fn scatter(&self, ray_in:&Ray, rec:&mut HitRecord, scattered:&mut Ray) -> Option<(Vec3, Ray)> {
+	pub fn scatter(&self, ray_in:&Ray, rec:&HitRecord/*, scattered:&mut Ray*/) -> Option<(Vec3, Ray)> {
 		match *self {
 			Material::Lambertian{albedo} => {
 				Material::scatter_lambertian(albedo, ray_in, rec)

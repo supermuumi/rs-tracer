@@ -14,6 +14,7 @@ use vector3::Vec3;
 use ray::Ray;
 use camera::Camera;
 use hitable::{Hitable,HitRecord,Sphere};
+use material::Material;
 
 fn hit_sphere(center:Vec3, radius:f64, r:&Ray) -> f64 {
 	let oc = r.origin - center;
@@ -27,12 +28,20 @@ fn hit_sphere(center:Vec3, radius:f64, r:&Ray) -> f64 {
 	(-b-discriminant.sqrt()) / (2.0*a)
 }
 
-fn get_ray_color(r:Ray) -> Vec3 {
-	let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, &r);
-	if t>0.0 {
-		let n = (r.point_at(t) -Vec3::new(0.0, 0.0, -1.0)).normalize();
-		return 0.5*Vec3::new(n.x+1.0, n.y+1.0, n.z+1.0)
+fn get_ray_color(r:Ray, depth:u32) -> Vec3 {
+	let s = Sphere {
+		center: Vec3::new(0.0,0.0,-1.0),
+		radius: 0.5,
+		material: Material::Lambertian{albedo: Vec3::new(0.8,0.0,0.0)},
+	};
+
+	if let Some(ray_hit) = s.hit(&r, 0.0001, std::f64::MAX) {
+		if let Some((attenuation, scattered)) = ray_hit.material.scatter(&r, &ray_hit) {
+			return attenuation * get_ray_color(scattered, depth + 1);
+		}
+		return Vec3::zero()
 	}
+
 	let unit_dir = &r.direction.normalize();
 	let t = 0.5*(unit_dir.y + 1.0);
 	(1.0-t)*Vec3::one() + t*Vec3::new(0.5, 0.7, 1.0)
@@ -42,6 +51,7 @@ fn main() {
 
 	let image_width = 100;
 	let image_height = 100;
+	let num_samples = 100;
 
 	let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
 	let horizontal = Vec3::new(4.0, 0.0, 0.0);
@@ -58,7 +68,13 @@ fn main() {
 			direction: lower_left_corner + u*horizontal + v*vertical,
 			time: 0.0
 		};
-		let col = get_ray_color(r);
+
+		let mut col = Vec3::zero();
+		for n in 1..num_samples {
+			col = col+get_ray_color(r, 0);
+		}
+		col = col/num_samples as f64;
+		col = Vec3::new(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
 
     	*pixel = image::Rgb([
     		(255.0 * col.x) as u8, 
