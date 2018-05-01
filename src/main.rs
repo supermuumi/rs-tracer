@@ -16,18 +16,6 @@ use camera::Camera;
 use hitable::{Hitable,HitRecord,Sphere};
 use material::Material;
 
-fn hit_sphere(center:Vec3, radius:f64, r:&Ray) -> f64 {
-	let oc = r.origin - center;
-	let a = r.direction.dot(r.direction);
-	let b = 2.0*oc.dot(r.direction);
-	let c = oc.dot(oc) - radius*radius;
-	let discriminant = b*b - 4.0*a*c;
-	if (discriminant < 0.0) {
-		return -1.0;
-	}
-	(-b-discriminant.sqrt()) / (2.0*a)
-}
-
 fn get_ray_color(r:Ray, depth:u32) -> Vec3 {
 	let s = Sphere {
 		center: Vec3::new(0.0,0.0,-1.0),

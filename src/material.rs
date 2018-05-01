@@ -3,23 +3,7 @@ use hitable::HitRecord;
 use vector3;
 use vector3::Vec3;
 
-/*
-
-This works for editing function parameters
-
-fn foo(x:&mut i32) {
-	*x = 5;
-}
-
-fn main() {
-	let mut x = 0;
-	println!("{:?}", x);
-	foo(&mut x);
-	println!("{:?}", x);
-}
-
-*/
-
+// thanks to Cam Hart for pointing out an easy way to do this, kept banging my head against the wall trying to do it the C++ way
 #[derive(Clone, Copy)]
 pub enum Material {
 	Lambertian { 
