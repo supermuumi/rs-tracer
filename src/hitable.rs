@@ -35,6 +35,10 @@ pub trait Hitable {
 	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABox>;
 }
 
+pub struct HitableList {
+	pub list:Vec<Box<Hitable>>,
+}
+
 pub struct Sphere {
 	pub center: Vec3,
 	pub radius: f64,
@@ -87,10 +91,10 @@ impl Hitable for Sphere {
 	}
 }
 
-impl Hitable for Vec<Box<Hitable>> {
+impl Hitable for HitableList {
     fn hit(&self, r: &Ray, t_min:f64, t_max:f64) -> Option<HitRecord> {
         let mut best = None;
-        for child in self {
+        for child in &self.list {
             if let Some(hit) = child.hit(&r, t_min, t_max) {
                 match best {
                     None => best = Some(hit),
