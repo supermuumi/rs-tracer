@@ -82,6 +82,19 @@ impl Vec3 {
 		}
 	}
 
+	pub fn reflect(self, n:Vec3) -> Vec3 {
+		self - 2.0 * self.dot(n) * n
+	}
+
+	pub fn refract(self, n:Vec3, ni_over_nt:f64) -> Option<Vec3> {
+		let uv = self.normalize();
+		let dt = uv.dot(n);
+		let discriminant = 1.0 - ni_over_nt*ni_over_nt*(1.0 - dt*dt);
+		if discriminant > 0.0 {
+			return Some(ni_over_nt*(uv - n*dt) - n*discriminant.sqrt());
+		}
+		None
+	}
 
 }
 

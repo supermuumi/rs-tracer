@@ -55,7 +55,7 @@ impl Hitable for Sphere {
 
 		if discriminant > 0.0 {
 			let temp = (-b - discriminant.sqrt()) / a;
-			if (temp > t_min && temp < t_max) {
+			if temp > t_min && temp < t_max {
 				let p = r.point_at(temp);
 				return Some(HitRecord {
 					dist: temp,

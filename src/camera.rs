@@ -48,7 +48,7 @@ impl Camera {
 		}
 	}
 
-	pub fn get_ray(self, s:f64, t:f64) -> Ray {
+	pub fn get_ray(&self, s:f64, t:f64) -> Ray {
 		let rd = self.lens_radius*vector3::get_random_in_unit_disc();
 		let offset = self.u*rd.x + self.v*rd.y;
 		let time = self.shutter_open + rand::random::<f64>()*(self.shutter_close-self.shutter_open);

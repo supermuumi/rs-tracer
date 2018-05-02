@@ -27,8 +27,17 @@ impl Material {
 		Some((albedo, Ray { origin: rec.point, direction: target-rec.point, time:0.0 }))
 	}
 
-	fn scatter_metal(albedo:Vec3, fuzziness:f64, _:&Ray, rec:&HitRecord) -> Option<(Vec3, Ray)> {
-		// TODO
+	fn scatter_metal(albedo:Vec3, fuzziness:f64, ray_in:&Ray, rec:&HitRecord) -> Option<(Vec3, Ray)> {
+		let reflected = ray_in.direction.normalize().reflect(rec.normal);
+		let scattered = Ray {
+			origin: rec.point, 
+			direction: reflected, 
+			time: ray_in.time
+		}; // +fuzziness*random_in_unit_sphere());
+
+		if (scattered.direction.dot(rec.normal) > 0.0) {
+			return Some((albedo, scattered));
+		}
 		None
 	}
 
@@ -43,7 +52,7 @@ impl Material {
 				Material::scatter_lambertian(albedo, ray_in, rec)
 			}
 			Material::Metal{albedo, fuzziness} => {
-				None //Material::scatter_metal(albedo, fuzziness, ray_in, rec)
+				Material::scatter_metal(albedo, fuzziness, ray_in, rec)
 			}
 			Material::Dielectric{ref_idx} => {
 				None //Material::scatter_dielectric(ref_idx, ray_in, rec)
