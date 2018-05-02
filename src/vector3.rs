@@ -10,18 +10,6 @@ pub struct Vec3 {
 	pub z:f64
 }
 
-pub fn dot(v:Vec3, v2:Vec3) -> f64 {
-	v.x*v2.x + v.y*v2.y + v.z*v2.z
-}
-
-pub fn cross(v:Vec3, v2:Vec3) -> Vec3 {
-	Vec3 {
-		x:   v.y*v2.z - v.z*v2.y,
-		y: -(v.x*v2.z - v.z*v2.x),
-		z:   v.x*v2.y - v.y*v2.x,
-	}
-}
-
 impl Vec3 {
 	#[allow(dead_code)]
 	pub fn new(_x:f64, _y:f64, _z:f64) -> Vec3 {

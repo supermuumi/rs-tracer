@@ -12,14 +12,13 @@ mod aabb;
 mod hitable;
 mod material;
 
-use rand::random;
 use chrono::prelude::*;
 use structopt::StructOpt;
 
 use vector3::Vec3;
 use ray::Ray;
 use camera::Camera;
-use hitable::{Hitable,HitableList,HitRecord,Sphere};
+use hitable::{Hitable,HitableList,Sphere};
 use material::Material;
 
 #[derive(StructOpt,Debug)]
@@ -36,12 +35,6 @@ struct Options {
 }
 
 fn get_ray_color(world:&HitableList, r:Ray, depth:u32) -> Vec3 {
-	let s = Sphere {
-		center: Vec3::new(0.0,0.0,-1.0),
-		radius: 0.5,
-		material: Material::Lambertian{albedo: Vec3::new(0.8,0.0,0.0)},
-	};
-
 	if let Some(ray_hit) = world.hit(&r, 0.0001, std::f64::MAX) {
 		if let Some((attenuation, scattered)) = ray_hit.material.scatter(&r, &ray_hit) {
 			return attenuation * get_ray_color(world, scattered, depth + 1);
@@ -130,7 +123,7 @@ fn main() {
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
 
 		let mut col = Vec3::zero();
-		for n in 1..num_samples {
+		for _n in 1..num_samples {
 			let u = (x as f64 + rand::random::<f64>()) / image_width as f64;
 			let v = (y as f64 + rand::random::<f64>()) / image_height as f64;
 			let r = cam.get_ray(u, v);

@@ -31,11 +31,11 @@ impl Material {
 		let reflected = ray_in.direction.normalize().reflect(rec.normal);
 		let scattered = Ray {
 			origin: rec.point, 
-			direction: reflected, 
+			direction: reflected + fuzziness * vector3::get_random_in_unit_sphere(), 
 			time: ray_in.time
-		}; // +fuzziness*random_in_unit_sphere());
+		};
 
-		if (scattered.direction.dot(rec.normal) > 0.0) {
+		if scattered.direction.dot(rec.normal) > 0.0 {
 			return Some((albedo, scattered));
 		}
 		None

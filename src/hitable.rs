@@ -1,7 +1,7 @@
 use ray::Ray;
 use vector3::Vec3;
 use material::Material;
-use aabb::AABox;
+use aabb::AABB;
 
 #[derive(Clone,Copy)]
 pub struct HitRecord {
@@ -13,26 +13,9 @@ pub struct HitRecord {
 	pub v:f64
 }
 
-/*
-
-This works for editing function parameters
-
-fn foo(x:&mut i32) {
-	*x = 5;
-}
-
-fn main() {
-	let mut x = 0;
-	println!("{:?}", x);
-	foo(&mut x);
-	println!("{:?}", x);
-}
-
-*/
-
 pub trait Hitable {
 	fn hit(&self, r:&Ray, t_min:f64, t_max:f64) -> Option<HitRecord>;
-	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABox>;
+	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABB>;
 }
 
 pub struct HitableList {
@@ -83,8 +66,8 @@ impl Hitable for Sphere {
 		None
 	}
 
-	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABox> {
-		Some(AABox{
+	fn bounding_box(&self, _t0:f64, _t1:f64) -> Option<AABB> {
+		Some(AABB{
 			min: self.center - Vec3::new(self.radius, self.radius, self.radius),
 			max: self.center + Vec3::new(self.radius, self.radius, self.radius)
 		})
@@ -107,7 +90,7 @@ impl Hitable for HitableList {
         best
     }
 
-	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABox> {
+	fn bounding_box(&self, _t0:f64, _t1:f64) -> Option<AABB> {
 		None
 	}
 }

@@ -1,12 +1,12 @@
 use vector3::Vec3;
 use ray::Ray;
 
-pub struct AABox {
+pub struct AABB {
 	pub min:Vec3,
 	pub max:Vec3
 }
 
-impl AABox {
+impl AABB {
 	#[allow(dead_code)]
 	fn hit(self, r:Ray, t_min_orig:f64, t_max_orig:f64) -> bool  {
 		let inv_d = 1.0 / r.direction.x;
@@ -70,7 +70,7 @@ impl AABox {
 }
 
 #[allow(dead_code)]
-pub fn combine_AABB(a:AABox, b:AABox) -> AABox {
+pub fn combine_aabb(a:AABB, b:AABB) -> AABB {
 	let small_box = Vec3 {
 		x: a.min.x.min(b.min.x),
 		y: a.min.y.min(b.min.y),
@@ -80,5 +80,5 @@ pub fn combine_AABB(a:AABox, b:AABox) -> AABox {
 		y: a.max.y.max(b.max.y),
 		z: a.max.z.max(b.max.z)};
 
-	AABox{min:small_box, max:large_box}
+	AABB{min:small_box, max:large_box}
 }
