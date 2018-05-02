@@ -40,16 +40,6 @@ fn get_ray_color(world:&HitableList, r:Ray, depth:u32) -> Vec3 {
 fn create_scene() -> Vec<Box<Hitable>> {
 	let mut obj_list: Vec<Box<Hitable>> = Vec::with_capacity(500);
 
-	obj_list.push(Box::new(
-		Sphere {
-            center: Vec3::new(0.0, -1000.0, 0.0),
-            radius: 1000.0,
-            material: Material::Lambertian {
-                albedo: Vec3::new(0.5, 0.5, 0.5),
-            },
-        })
-   	);
-
 	obj_list.push(Box::new(Sphere {
 		center: Vec3::new(0.0,-1000.0,0.0),
 		radius: 1000.0,
@@ -60,21 +50,32 @@ fn create_scene() -> Vec<Box<Hitable>> {
 
 	for a in -n..n { 
 		for b in -n..n {
-          	obj_list.push(Box::new(
-          		Sphere {
-                        center: Vec3::new(
-				                    a as f64 + 0.9 * rand::random::<f64>(),
-				                    0.2,
-				                    b as f64 + 0.9 * rand::random::<f64>(),
-				                ),
-                        radius: 0.2,
-                        material: Material::Lambertian {
+
+			let c = Vec3::new(a as f64 + 0.9 * rand::random::<f64>(), 0.2, b as f64 + 0.9 * rand::random::<f64>());
+			let mat_rand = rand::random::<f64>();
+			let mut mat = Material::Lambertian {
                             albedo: Vec3::new(
                                 rand::random::<f64>() * rand::random::<f64>(),
                                 rand::random::<f64>() * rand::random::<f64>(),
                                 rand::random::<f64>() * rand::random::<f64>(),
                             ),
-                        },
+                        };
+            if mat_rand < 0.3 {
+            	mat = Material::Metal {
+                            albedo: Vec3::new(
+                                rand::random::<f64>() * rand::random::<f64>(),
+                                rand::random::<f64>() * rand::random::<f64>(),
+                                rand::random::<f64>() * rand::random::<f64>(),
+                            ),
+                            fuzziness: 0.2,
+                        };
+            }
+
+          	obj_list.push(Box::new(
+          		Sphere {
+                        center: c,
+                        radius: 0.2,
+                        material: mat,
                 }
             ));
 		}
@@ -84,22 +85,17 @@ fn create_scene() -> Vec<Box<Hitable>> {
 }
 
 fn main() {
-
-	let image_width = 200;
-	let image_height = 200;
-	let num_samples = 10;
-
-	let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-	let horizontal = Vec3::new(4.0, 0.0, 0.0);
-	let vertical = Vec3::new(0.0, 2.0, 0.0);
-	let origin = Vec3::zero();
-
+	// TODO get from command line
+	let image_width = 400;
+	let image_height = 400;
+	let num_samples = 100;
 
 	// create scene
+	// TODO make this return a scene with camera settings etc. 
 	let world = HitableList { list: create_scene() };
 	
 	// set camera
-	let look_from = Vec3::new(-3.0, 2.0, 1.0); 
+	let look_from = Vec3::new(-3.0, 1.0, 1.0); 
 	let look_at = Vec3::new(0.0, 0.0, -1.0);
 	let cam = Camera::new(
 		look_from, look_at,
@@ -130,11 +126,12 @@ fn main() {
     		(255.0 * col.z) as u8
     	]);
     	n = n+1;
-    	if n%100 == 0 {
-    		println!("{:.2}%", y as f64 * 100.0 /image_height as f64);
+    	if n%image_width == 0 {
+    		println!("{:.2}%", y as f64 * 100.0 / image_height as f64);
     	}
 	}
 
+	// write image
 	let dt = Local::now();
 	let fname = format!("out_{}.png", dt.format("%Y%m%d_%H%M%S").to_string());
 	image::ImageRgb8(imgbuf).save(fname).expect("fuk");
