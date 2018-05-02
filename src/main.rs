@@ -2,6 +2,9 @@ extern crate image;
 extern crate rand;
 extern crate chrono;
 
+#[macro_use]
+extern crate structopt;
+
 mod vector3;
 mod ray;
 mod camera;
@@ -11,12 +14,26 @@ mod material;
 
 use rand::random;
 use chrono::prelude::*;
+use structopt::StructOpt;
 
 use vector3::Vec3;
 use ray::Ray;
 use camera::Camera;
 use hitable::{Hitable,HitableList,HitRecord,Sphere};
 use material::Material;
+
+#[derive(StructOpt,Debug)]
+#[structopt(name="raytracer")]
+struct Options {
+	#[structopt(short="w", help="output image width", default_value="200")]
+	image_width: u32,
+
+	#[structopt(short="h", help="output image height", default_value="200")]
+	image_height: u32,
+
+	#[structopt(short="s", help="num samples per pixel", default_value="10")]
+	num_samples: u32,
+}
 
 fn get_ray_color(world:&HitableList, r:Ray, depth:u32) -> Vec3 {
 	let s = Sphere {
@@ -85,10 +102,12 @@ fn create_scene() -> Vec<Box<Hitable>> {
 }
 
 fn main() {
-	// TODO get from command line
-	let image_width = 400;
-	let image_height = 400;
-	let num_samples = 100;
+
+	// parse command line
+	let opt = Options::from_args();
+	let image_width = opt.image_width;
+	let image_height = opt.image_height;
+	let num_samples = opt.num_samples;
 
 	// create scene
 	// TODO make this return a scene with camera settings etc. 

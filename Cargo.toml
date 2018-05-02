@@ -7,3 +7,4 @@ authors = ["supermuumi <mikko.uromo@gmail.com>"]
 rand = "0.4.2"
 image = "*"
 chrono = "0.4"
+structopt = "0.2"
