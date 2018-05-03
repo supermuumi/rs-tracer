@@ -66,28 +66,28 @@ fn create_scene(rng: &mut Rng) -> Vec<Box<Hitable>> {
 			let c = Vec3::new(a as f32 + 0.9 * rng.next_f32(), 0.2, b as f32 + 0.9 * rng.next_f32());
 			let mat_rand = rng.next_f32();
 			let mut mat = Material::Lambertian {
-                            albedo: Vec3::new(
-                                rng.next_f32() * rng.next_f32(),
-                                rng.next_f32() * rng.next_f32(),
-                                rng.next_f32() * rng.next_f32(),
-                            ),
-                        };
+                albedo: Vec3::new(
+                    rng.next_f32() * rng.next_f32(),
+                    rng.next_f32() * rng.next_f32(),
+                    rng.next_f32() * rng.next_f32(),
+                ),
+            };
             if mat_rand < 0.3 {
             	mat = Material::Metal {
-                            albedo: Vec3::new(
-                                rng.next_f32() * rng.next_f32(),
-                                rng.next_f32() * rng.next_f32(),
-                                rng.next_f32() * rng.next_f32(),
-                            ),
-                            fuzziness: 0.2,
-                        };
+                    albedo: Vec3::new(
+                        rng.next_f32() * rng.next_f32(),
+                        rng.next_f32() * rng.next_f32(),
+                        rng.next_f32() * rng.next_f32(),
+                    ),
+                    fuzziness: 0.2,
+                };
             }
 
           	obj_list.push(Box::new(
           		Sphere {
-                        center: c,
-                        radius: 0.2,
-                        material: mat,
+                    center: c,
+                    radius: 0.2,
+                    material: mat,
                 }
             ));
 		}
