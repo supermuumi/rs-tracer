@@ -5,17 +5,17 @@ use aabb::AABB;
 
 #[derive(Clone,Copy)]
 pub struct HitRecord {
-	pub dist: f64,
+	pub dist: f32,
 	pub point: Vec3, 
 	pub normal: Vec3, 
 	pub material: Material,
-	pub u:f64,
-	pub v:f64
+	pub u:f32,
+	pub v:f32
 }
 
 pub trait Hitable {
-	fn hit(&self, r:&Ray, t_min:f64, t_max:f64) -> Option<HitRecord>;
-	fn bounding_box(&self, t0:f64, t1:f64) -> Option<AABB>;
+	fn hit(&self, r:&Ray, t_min:f32, t_max:f32) -> Option<HitRecord>;
+	fn bounding_box(&self, t0:f32, t1:f32) -> Option<AABB>;
 }
 
 pub struct HitableList {
@@ -24,12 +24,12 @@ pub struct HitableList {
 
 pub struct Sphere {
 	pub center: Vec3,
-	pub radius: f64,
+	pub radius: f32,
 	pub material: Material,
 }
 
 impl Hitable for Sphere {
-	fn hit(&self, r: &Ray, t_min:f64, t_max:f64) -> Option<HitRecord> {
+	fn hit(&self, r: &Ray, t_min:f32, t_max:f32) -> Option<HitRecord> {
 		let oc = r.origin - self.center;
 		let a = r.direction.dot(r.direction);
 		let b = oc.dot(r.direction);
@@ -66,7 +66,7 @@ impl Hitable for Sphere {
 		None
 	}
 
-	fn bounding_box(&self, _t0:f64, _t1:f64) -> Option<AABB> {
+	fn bounding_box(&self, _t0:f32, _t1:f32) -> Option<AABB> {
 		Some(AABB{
 			min: self.center - Vec3::new(self.radius, self.radius, self.radius),
 			max: self.center + Vec3::new(self.radius, self.radius, self.radius)
@@ -75,7 +75,7 @@ impl Hitable for Sphere {
 }
 
 impl Hitable for HitableList {
-    fn hit(&self, r: &Ray, t_min:f64, t_max:f64) -> Option<HitRecord> {
+    fn hit(&self, r: &Ray, t_min:f32, t_max:f32) -> Option<HitRecord> {
         let mut best = None;
         for child in &self.list {
             if let Some(hit) = child.hit(&r, t_min, t_max) {
@@ -90,7 +90,7 @@ impl Hitable for HitableList {
         best
     }
 
-	fn bounding_box(&self, _t0:f64, _t1:f64) -> Option<AABB> {
+	fn bounding_box(&self, _t0:f32, _t1:f32) -> Option<AABB> {
 		None
 	}
 }

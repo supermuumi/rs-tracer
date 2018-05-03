@@ -8,7 +8,7 @@ pub struct AABB {
 
 impl AABB {
 	#[allow(dead_code)]
-	fn hit(self, r:Ray, t_min_orig:f64, t_max_orig:f64) -> bool  {
+	fn hit(self, r:Ray, t_min_orig:f32, t_max_orig:f32) -> bool  {
 		let inv_d = 1.0 / r.direction.x;
 		let mut t0 = (self.min.x - r.origin.x) * inv_d;
 		let mut t1 = (self.max.x - r.origin.x) * inv_d;
