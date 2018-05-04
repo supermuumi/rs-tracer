@@ -69,24 +69,23 @@ impl Vec3 {
 		self - 2.0 * self.dot(n) * n
 	}
 
-	pub fn refract(self, n:Vec3, ni_over_nt:f32) -> Option<Vec3> {
+	pub fn refract(self, n:Vec3, ni_over_nt:f32) -> (bool,Vec3) {
 		let uv = self.normalize();
 		let dt = uv.dot(n);
-		let discriminant = 1.0 - ni_over_nt*ni_over_nt*(1.0 - dt*dt);
+		let discriminant = 1.0 - ni_over_nt*ni_over_nt*(1.0 - dt*dt);		
 		if discriminant > 0.0 {
-			return Some(ni_over_nt*(uv - n*dt) - n*discriminant.sqrt());
+			return (true, ni_over_nt*(uv - n*dt) - n*discriminant.sqrt());
 		}
-		None
+		(false,Vec3::zero())
 	}
-
 }
-/*
+
 impl fmt::Display for Vec3 {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {} {})", self.x, self.y, self.z)
     }
 }
-*/
+
 impl Add<Vec3> for Vec3 {
 	type Output=Vec3;
 

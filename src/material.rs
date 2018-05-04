@@ -42,9 +42,33 @@ impl Material {
 		None
 	}
 
-	fn scatter_dielectric() -> Option<(Vec3, Ray)> {
-		// TODO
-		None
+	fn scatter_dielectric(ref_idx:f32, ray_in:&Ray, rec:&HitRecord, rng:&mut Rng) -> Option<(Vec3, Ray)> {		
+		let reflected = ray_in.direction.reflect(rec.normal);
+		let mut ni_over_nt = ref_idx;		
+		let mut outward_normal = Vec3::one();
+		let mut cosine = 0.0;
+		
+		if ray_in.direction.dot(rec.normal) > 0.0 {
+			outward_normal = -rec.normal;
+			cosine = ref_idx * ray_in.direction.dot(rec.normal) / ray_in.direction.length();
+		}
+		else {
+			outward_normal = rec.normal;
+			ni_over_nt = 1.0 / ref_idx;
+			cosine = -(ray_in.direction.dot(rec.normal)) / ray_in.direction.length();
+		}
+
+		let (hit,refracted) = ray_in.direction.refract(outward_normal, ni_over_nt);		
+		let mut reflect_prob = 1.0;
+		if hit {
+			reflect_prob = schlick(cosine, ref_idx)
+		}
+		
+		if rng.next_f32() < reflect_prob {
+			return Some((Vec3::one(), Ray{origin:rec.point, direction: reflected, time: ray_in.time}));
+		}
+
+		Some((Vec3::one(), Ray{origin:rec.point, direction: refracted, time: ray_in.time}))
 	}
 
 	pub fn scatter(&self, ray_in:&Ray, rec:&HitRecord, rng:&mut Rng) -> Option<(Vec3, Ray)> {
@@ -56,8 +80,15 @@ impl Material {
 				Material::scatter_metal(albedo, fuzziness, ray_in, rec, rng)
 			}
 			Material::Dielectric{ref_idx} => {
-				None //Material::scatter_dielectric(ref_idx, ray_in, rec)
+				Material::scatter_dielectric(ref_idx, ray_in, rec, rng)
 			}
 		}
 	}
+}
+
+fn schlick(cosine:f32, ref_idx:f32) -> f32 {
+	let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+	r0 = r0*r0;
+
+	r0 + (1.0 - r0)*(1.0 - cosine).powi(5)
 }

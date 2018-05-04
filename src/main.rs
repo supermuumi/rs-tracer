@@ -21,7 +21,7 @@ use ray::Ray;
 use camera::Camera;
 use hitable::{Hitable,HitableList,Sphere};
 use material::Material;
-use rand::Rng;
+use rand::{Rng,SeedableRng,StdRng};
 
 #[derive(StructOpt,Debug)]
 #[structopt(name="raytracer")]
@@ -34,12 +34,17 @@ struct Options {
 
 	#[structopt(short="s", help="num samples per pixel", default_value="10")]
 	num_samples: u32,
+
+	#[structopt(short="r", help="max ray recursions", default_value="50")]
+	max_recursions: u32,
 }
 
-fn get_ray_color(world:&HitableList, r:Ray, depth:u32, rng: &mut Rng) -> Vec3 {
-	if let Some(ray_hit) = world.hit(&r, 0.0001, std::f32::MAX) {
-		if let Some((attenuation, scattered)) = ray_hit.material.scatter(&r, &ray_hit, rng) {
-			return attenuation * get_ray_color(world, scattered, depth + 1, rng);
+fn get_ray_color(world:&HitableList, r:Ray, recursions_left:u32, rng: &mut Rng) -> Vec3 {
+	if let Some(ray_hit) = world.hit(&r, 0.0001, std::f32::MAX) {		
+		if recursions_left > 0 {
+			if let Some((attenuation, scattered)) = ray_hit.material.scatter(&r, &ray_hit, rng) {
+				return attenuation * get_ray_color(world, scattered, recursions_left - 1, rng);
+			}
 		}
 		return Vec3::zero()
 	}
@@ -62,9 +67,9 @@ fn create_scene(rng: &mut Rng) -> Vec<Box<Hitable>> {
 
 	for a in -n..n { 
 		for b in -n..n {
-
-			let c = Vec3::new(a as f32 + 0.9 * rng.next_f32(), 0.2, b as f32 + 0.9 * rng.next_f32());
+			let mut c = Vec3::new(a as f32 + 0.9 * rng.next_f32(), 0.2, b as f32 + 0.9 * rng.next_f32());
 			let mat_rand = rng.next_f32();
+			let mut radius = 0.2;			
 			let mut mat = Material::Lambertian {
                 albedo: Vec3::new(
                     rng.next_f32() * rng.next_f32(),
@@ -72,7 +77,14 @@ fn create_scene(rng: &mut Rng) -> Vec<Box<Hitable>> {
                     rng.next_f32() * rng.next_f32(),
                 ),
             };
-            if mat_rand < 0.3 {
+            if mat_rand < 0.2 {
+            	mat = Material::Dielectric {
+                    ref_idx:0.75 + rng.next_f32() * 0.75,
+                };
+                c.y = 0.6;
+                radius = 0.6;
+            }
+            else if mat_rand < 0.3 {
             	mat = Material::Metal {
                     albedo: Vec3::new(
                         rng.next_f32() * rng.next_f32(),
@@ -86,7 +98,7 @@ fn create_scene(rng: &mut Rng) -> Vec<Box<Hitable>> {
           	obj_list.push(Box::new(
           		Sphere {
                     center: c,
-                    radius: 0.2,
+                    radius: radius,
                     material: mat,
                 }
             ));
@@ -104,9 +116,10 @@ fn main() {
 	let image_width = opt.image_width;
 	let image_height = opt.image_height;
 	let num_samples = opt.num_samples;
+	let max_recursions = opt.max_recursions;
 
-
-	let mut rng = rand::thread_rng();
+	let seed:&[_] = &[7,1,5,5,1,7];
+	let mut rng:StdRng = SeedableRng::from_seed(seed); //rand::thread_rng();
 
 	// create scene
 	// TODO make this return a scene with camera settings etc. 
@@ -114,7 +127,7 @@ fn main() {
 	
 	// set camera
 	let look_from = Vec3::new(-3.0, 1.0, 1.0); 
-	let look_at = Vec3::new(0.0, 0.0, -1.0);
+	let look_at = Vec3::new(0.0, 0.0, 0.0);
 	let cam = Camera::new(
 		look_from, look_at,
 		Vec3::new(0.0, -1.0, 0.0), 
@@ -137,7 +150,7 @@ fn main() {
 			let u = (x as f32 + rng.next_f32()) / image_width as f32;
 			let v = (y as f32 + rng.next_f32()) / image_height as f32;
 			let r = cam.get_ray(u, v, &mut rng);
-			col = col + get_ray_color(&world, r, 0, &mut rng);
+			col = col + get_ray_color(&world, r, max_recursions, &mut rng);
 		}
 		col = col/num_samples as f32;
 		col = Vec3::new(col.x.sqrt(), col.y.sqrt(), col.z.sqrt());
